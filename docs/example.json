@@ -1,0 +1,4 @@
+{
+  "grammar": "E -> E + T | T\nT -> T * F | F\nF -> ( E ) | id",
+  "input": "id + id * id"
+}

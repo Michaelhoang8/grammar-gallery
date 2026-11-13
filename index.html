@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Grammar Gallery</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a href="/">Grammar Gallery</a>
+        <p>Rules, states, and the decisions between them.</p>
+      </div>
+      <div class="header-actions">
+        <button id="open">Open study</button
+        ><button id="save">Save study</button
+        ><input id="file" type="file" accept=".json" hidden />
+      </div>
+    </header>
+    <main>
+      <div class="workspace">
+        <aside>
+          <p class="eyebrow">01 / The language</p>
+          <h1>See the parser think.</h1>
+          <label
+            >Grammar<textarea
+              id="grammar"
+              rows="11"
+              spellcheck="false"
+              maxlength="8000"
+            ></textarea>
+          </label>
+          <p class="hint">
+            First rule selects the start symbol. Space every symbol. Use ~ for
+            an empty production. A symbol without a left-hand rule is a
+            terminal.
+          </p>
+          <label
+            >Input tokens<input
+              id="input"
+              maxlength="4000"
+              spellcheck="false" /></label
+          ><button id="build" class="primary">Build table & parse</button>
+          <div class="examples">
+            <button id="example">Expressions</button
+            ><button id="nullable">Nullable</button
+            ><button id="ambiguous">Conflict</button>
+          </div>
+          <p id="message" role="status"></p>
+        </aside>
+        <section class="reader">
+          <div class="reader-head">
+            <p class="eyebrow">02 / The decision</p>
+            <span id="status">Building</span>
+          </div>
+          <div id="metrics" class="metrics"></div>
+          <p id="parse-message"></p>
+          <div class="playback">
+            <button id="back" aria-label="Previous action">←</button
+            ><button id="play">Play</button
+            ><button id="next" aria-label="Next action">→</button
+            ><label
+              >Parse action<input
+                id="step"
+                type="range"
+                min="0"
+                max="1"
+                value="0" /></label
+            ><span id="position"></span>
+          </div>
+          <div class="trace-card">
+            <p class="label">State stack</p>
+            <div id="stack" class="stack"></div>
+            <p class="label">Symbol stack</p>
+            <code id="symbols"></code>
+            <p class="label">Remaining input</p>
+            <code id="remaining"></code>
+            <p id="action"></p>
+          </div>
+          <div id="conflicts"></div>
+          <details>
+            <summary>Accepted parse tree</summary>
+            <pre id="tree"></pre>
+          </details>
+        </section>
+      </div>
+      <section class="inspection">
+        <div>
+          <div class="section-head">
+            <h2>Inside a state</h2>
+            <label>LR(0) state<select id="state"></select></label>
+          </div>
+          <pre id="items"></pre>
+          <p id="prefix" class="hint"></p>
+          <div id="transitions" class="transitions"></div>
+        </div>
+        <div>
+          <h2>FIRST / FOLLOW</h2>
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Nullable</th>
+                  <th>FIRST</th>
+                  <th>FOLLOW</th>
+                </tr>
+              </thead>
+              <tbody id="sets"></tbody>
+            </table>
+          </div>
+          <p id="warnings" class="hint"></p>
+        </div>
+      </section>
+      <details>
+        <summary>Full SLR action and goto table</summary>
+        <p class="hint">
+          sN shifts into state N; rN reduces production N; acc accepts. Multiple
+          actions in a cell are unresolved conflicts. Click a state number to
+          inspect its items.
+        </p>
+        <div id="table" class="scroll"></div>
+        <pre id="productions"></pre>
+      </details>
+      <div class="exports">
+        <button id="evidence" disabled>Export construction evidence</button
+        ><button id="dot" disabled>Export automaton DOT</button>
+      </div>
+      <details>
+        <summary>Scope and limits</summary>
+        <p>
+          This constructs canonical LR(0) item sets and adds reductions on
+          FOLLOW sets to form an SLR(1) table. A conflict means the grammar is
+          not SLR(1); it does not by itself prove ambiguity. No precedence
+          declarations, conflict resolution, lexer, semantic actions, error
+          recovery, or LR(1)/LALR construction are provided.
+        </p>
+        <p>
+          At most 24 productions, 12 nonterminals, 20 terminals, eight symbols
+          per right-hand side, 80 states, 100 input tokens, and 500 parse
+          actions. Empty input is valid. EOF ($) is appended automatically. Item
+          paths may contain nonterminals and are not accepted-input or ambiguity
+          witnesses.
+        </p>
+      </details>
+    </main>
+    <footer>Every reduction has a reason.</footer>
+  </body>
+</html>
