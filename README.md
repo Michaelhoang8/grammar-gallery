@@ -4,6 +4,8 @@ A compact compiler workbench that constructs canonical LR(0) item sets, computes
 
 ![Parser workbench](docs/workbench.png)
 
+The parser workspace separates grammar editing from the state stack, symbol stack, and remaining-token stream. Newly pushed states animate briefly; the current lookahead is highlighted. Accepted parses include an expandable SVG syntax tree alongside the text tree, with explicit epsilon productions and reduced-motion support.
+
 ## Run
 
 ```sh

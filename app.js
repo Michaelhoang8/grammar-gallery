@@ -93,15 +93,31 @@ function trace() {
   $("next").disabled = !f || step === p.trace.length - 1;
   $("play").disabled = !p.trace.length;
   $("position").textContent = f ? `${step + 1} / ${p.trace.length}` : "—";
+  const states = f ? f.states : [];
+  const previous = Array.from($("stack").children);
   $("stack").replaceChildren(
-    ...(f ? f.states : []).map((v) => el("span", String(v))),
+    ...states.map((v, i) => {
+      if (previous[i]?.textContent === String(v)) return previous[i];
+      const chip = el("span", String(v));
+      chip.className = "new-state";
+      return chip;
+    }),
   );
-  $("symbols").textContent = f
-    ? f.symbols.join(" ") || "ε"
-    : "No deterministic parse";
-  $("remaining").textContent = f
-    ? [...p.tokens.slice(f.position), "$"].join(" ")
-    : "Resolve grammar conflicts first.";
+  $("symbols").replaceChildren(
+    ...(f
+      ? f.symbols.length
+        ? f.symbols
+        : ["ε"]
+      : ["No deterministic parse"]
+    ).map((v) => el("span", v)),
+  );
+  $("remaining").replaceChildren(
+    ...(f
+      ? [...p.tokens.slice(f.position), "$"]
+      : ["Resolve grammar conflicts first."]
+    ).map((v) => el("span", v)),
+  );
+  $("action").dataset.kind = f?.action.type || "conflict";
   $("action").textContent = f
     ? f.action.type === "reduce"
       ? `Reduce r${f.action.production}: ${production(result.table.productions[f.action.production])}`
@@ -115,6 +131,78 @@ function trace() {
     state = f.states.at(-1);
     inspect();
   }
+}
+function drawTree(root) {
+  const container = $("tree-diagram");
+  container.replaceChildren();
+  if (!root) {
+    container.append(el("p", "No accepted parse tree."));
+    return;
+  }
+  const nodes = [],
+    edges = [];
+  let leaf = 0,
+    depthMax = 0;
+  function visit(n, depth) {
+    const item = {
+      label: n.symbol + (n.children?.length === 0 ? " → ε" : ""),
+      depth,
+      terminal: n.token !== undefined,
+    };
+    nodes.push(item);
+    depthMax = Math.max(depthMax, depth);
+    const children = (n.children || []).map((child) => visit(child, depth + 1));
+    item.x = children.length
+      ? children.reduce((sum, child) => sum + child.x, 0) / children.length
+      : leaf++;
+    children.forEach((child) => edges.push([item, child]));
+    return item;
+  }
+  visit(root, 0);
+  const unit = Math.max(95, ...nodes.map((n) => n.label.length * 8 + 28));
+  const width = Math.max(600, leaf * unit),
+    height = (depthMax + 1) * 72 + 35;
+  const X = (n) => n.x * unit + unit / 2 + (width - leaf * unit) / 2,
+    Y = (n) => n.depth * 72 + 35;
+  function shape(tag, attrs, text) {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  const graph = shape("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    width,
+    height,
+    role: "img",
+    "aria-label": "Accepted syntax tree",
+  });
+  graph.append(
+    shape("title", {}, `Accepted parse tree with ${nodes.length} nodes`),
+  );
+  for (const [a, b] of edges)
+    graph.append(
+      shape("path", {
+        d: `M ${X(a)} ${Y(a) + 13} C ${X(a)} ${Y(a) + 38}, ${X(b)} ${Y(b) - 38}, ${X(b)} ${Y(b) - 13}`,
+        class: "tree-edge",
+      }),
+    );
+  for (const n of nodes) {
+    graph.append(
+      shape("rect", {
+        x: X(n) - (unit - 18) / 2,
+        y: Y(n) - 14,
+        width: unit - 18,
+        height: 28,
+        rx: 4,
+        class: n.terminal ? "tree-terminal" : "tree-rule",
+      }),
+    );
+    graph.append(
+      shape("text", { x: X(n), y: Y(n) + 4, "text-anchor": "middle" }, n.label),
+    );
+  }
+  container.append(graph);
 }
 function render() {
   const t = result.table,
@@ -217,6 +305,7 @@ function render() {
   }
   if (p.tree) tree(p.tree);
   $("tree").textContent = lines.join("\n") || "No accepted parse tree.";
+  drawTree(p.tree);
   trace();
   inspect();
 }

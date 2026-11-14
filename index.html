@@ -10,8 +10,7 @@
   <body>
     <header>
       <div>
-        <a href="/">Grammar Gallery</a>
-        <p>Rules, states, and the decisions between them.</p>
+        <h1>Grammar Gallery</h1>
       </div>
       <div class="header-actions">
         <button id="open">Open study</button
@@ -22,8 +21,7 @@
     <main>
       <div class="workspace">
         <aside>
-          <p class="eyebrow">01 / The language</p>
-          <h1>See the parser think.</h1>
+          <h2>Grammar</h2>
           <label
             >Grammar<textarea
               id="grammar"
@@ -52,7 +50,7 @@
         </aside>
         <section class="reader">
           <div class="reader-head">
-            <p class="eyebrow">02 / The decision</p>
+            <p class="eyebrow">Parser replay</p>
             <span id="status">Building</span>
           </div>
           <div id="metrics" class="metrics"></div>
@@ -82,14 +80,18 @@
           <div id="conflicts"></div>
           <details>
             <summary>Accepted parse tree</summary>
-            <pre id="tree"></pre>
+            <div id="tree-diagram" class="tree-scroll"></div>
+            <details>
+              <summary>Text tree</summary>
+              <pre id="tree"></pre>
+            </details>
           </details>
         </section>
       </div>
       <section class="inspection">
         <div>
           <div class="section-head">
-            <h2>Inside a state</h2>
+            <h2>State items</h2>
             <label>LR(0) state<select id="state"></select></label>
           </div>
           <pre id="items"></pre>
@@ -146,6 +148,5 @@
         </p>
       </details>
     </main>
-    <footer>Every reduction has a reason.</footer>
   </body>
 </html>
